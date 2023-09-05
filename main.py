@@ -57,11 +57,6 @@ def cost_vol_left(left_image, right_image, max_disparity):
     return cost_volume
 
 
-# def cost_vol_left(left_image, right_image, max_disparity):
-#     height, width = left_image.shape
-#     padded_right = np.pad(right_image, ((0, 0), (0,max_disparity)), mode='constant')
-#     cost_volume = np.bitwise_xor(left_image[:, :, np.newaxis], padded_right[:, max_disparity:max_disparity+width, np.newaxis])
-#     return cost_volume.astype(np.float32)
 
 def cost_vol_right(right_image, left_image, max_disparity):
     height, width = right_image.shape
@@ -78,11 +73,6 @@ def cost_vol_right(right_image, left_image, max_disparity):
     return cost_volume
 
 
-# def cost_vol_right(right_image, left_image, max_disparity):
-#     height, width = right_image.shape
-#     padded_left = np.pad(left_image, ((0, 0), (max_disparity, 0)), mode='constant')
-#     cost_volume = np.bitwise_xor(padded_left[:, :width, np.newaxis], right_image[:, :, np.newaxis])
-#     return cost_volume.astype(np.float32)
 
 
 def aggregation(cost_volume, max_disparity):
@@ -153,76 +143,6 @@ def depth_ims(disparity_map, focal_len, T):
 
     return depth_map
 
-
-# def reprojection_to_3d(image, depth_map, K, t):
-#     height, width = image.shape[:2]
-#     matrix_3d = np.zeros((height, width, 4))  # Initialize the 3D matrix
-#     p = numpy.matmul(K, np.array([[1, 0, 0, t], [0, 1, 0, t], [0, 0, 1, t]]))
-#     U, s, V_T = np.linalg.svd(p.T)
-#
-#     sigma = np.zeros((U.shape[1], V_T.shape[0]))
-#     n = min(U.shape[1], V_T.shape[0])
-#     for i in range(n):
-#         sigma[i][i] = s[i]
-#
-#     # print(sigma.astype(np.int64))
-#     sig_pinv = np.linalg.pinv(sigma)
-#
-#     # print(sig_pinv.astype(np.int64))
-#     for y in range(height):
-#         for x in range(width):
-#             homogeneous_coord = np.array([x, y, 1])
-#             # print(U.shape ,sigma.T.shape,V_T.shape,homogeneous_coord.shape)
-#             transformed_coord = U @ sig_pinv.T @ V_T @ homogeneous_coord
-#             # transformed_coord = sigma@ homogeneous_coord
-#             # transformed_coord = transformed_coord
-#             Z = depth_map[y, x]
-#             transformed_coord = transformed_coord * Z
-#             # transformed_coord[0] = 0
-#             # transformed_coord[1] = 0
-#             # transformed_coord[2] =
-#             transformed_coord[3] = 1
-#             matrix_3d[y, x] = transformed_coord
-#
-#     return matrix_3d
-#
-#
-# def project(left_image, coor_3D, K, t=0):
-#     p = numpy.matmul(K, np.array([[1, 0, 0, t], [0, 1, 0, t], [0, 0, 1, t]]))
-#     res_image = np.zeros(left_image.shape)
-#     red_channel_res, green_channel_res, blue_channel_res = cv2.split(res_image)
-#     red_channel_left, green_channel_left, blue_channel_left = cv2.split(left_image)
-#
-#     h = left_image.shape[0]
-#     w = left_image.shape[1]
-#     for i in range(coor_3D.shape[0]):
-#         for j in range(coor_3D.shape[1]):
-#             X = coor_3D[i, j]
-#             v = p @ X
-#             if v[2] == 0:
-#                 blue_channel_res[i, j], green_channel_res[i, j], red_channel_res[i, j] = 0, 0, 0
-#                 continue
-#             v = v // v[2]
-#             x = v[0]
-#             y = v[1]
-#
-#             if 0 <= y < h and 0 <= x < w:
-#                 x = int(v[0])
-#                 y = int(v[1])
-#                 # print(x, y)
-#                 blue_channel_res[i, j] = blue_channel_left[y, x]
-#                 green_channel_res[i, j] = green_channel_left[y, x]
-#                 red_channel_res[i, j] = red_channel_left[y, x]
-#
-#     rejoined_image = np.zeros((blue_channel_res.shape[0], blue_channel_res.shape[1], 3), dtype=np.uint8)
-#
-#     rejoined_image[:, :, 0] = red_channel_res
-#     rejoined_image[:, :, 1] = green_channel_res
-#     rejoined_image[:, :, 2] = blue_channel_res
-#     # plt.imshow(rejoined_image)
-#     # plt.show()
-#     return rejoined_image
-#
 
 def reproject_to_3d(K, im_w, im_h, depth_matrix):
     res = []
